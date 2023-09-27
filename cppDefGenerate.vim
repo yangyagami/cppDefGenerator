@@ -15,8 +15,11 @@ def GenerateCppDefForEach(lineno: number)
 	var line = getline(lineno)
 	var col = ParseWhitespace(line, 0)
 	var retTypeName = ""
+	var functionName = ""
+	var argName = ""
+	var className = ""
 	while true
-		if line[col] != " " && line[col] != "\t" && line[col] != "\n" && line[col] != "\r"
+		if line[col] != " " && line[col] != "\t" && line[col] != "\n" && line[col] != "\r" && line[col] != "("
 			retTypeName = retTypeName .. line[col]
 		else
 			break
@@ -24,19 +27,22 @@ def GenerateCppDefForEach(lineno: number)
 		col += 1
 	endwhile
 
-	col = ParseWhitespace(line, col)
-	var functionName = ""
-	while true
-		if line[col] != " " && line[col] != "\t" && line[col] != "\n" && line[col] != "\r" && line[col] != "("
-			functionName = functionName .. line[col]
-		else
-			break
-		endif
-		col += 1
-	endwhile
+	if line[col] == "("
+		functionName = retTypeName
+		retTypeName = ""
+	else
+		col = ParseWhitespace(line, col)
+		while true
+			if line[col] != " " && line[col] != "\t" && line[col] != "\n" && line[col] != "\r" && line[col] != "("
+				functionName = functionName .. line[col]
+			else
+				break
+			endif
+			col += 1
+		endwhile
+	endif
 
 	col = ParseWhitespace(line, col)
-	var argName = ""
 	while true
 		if line[col] != ";"
 			argName = argName .. line[col]
@@ -46,7 +52,6 @@ def GenerateCppDefForEach(lineno: number)
 		col += 1
 	endwhile
 
-	var className = ""
 	var current = lineno - 1
 	var flag = false
 	while current >= 1
@@ -61,7 +66,12 @@ def GenerateCppDefForEach(lineno: number)
 	endwhile
 	
 	if flag == true
-		var generated = retTypeName .. " " .. className .. "::" .. functionName .. argName .. " {\n\n}\n\n"
+		var generated = ""
+		if retTypeName == ""
+			generated = className .. "::" .. functionName .. argName .. " {\n\n}\n\n"
+		else
+			generated = retTypeName .. " " .. className .. "::" .. functionName .. argName .. " {\n\n}\n\n"
+		endif
 		@a = @a .. generated
 	endif
 enddef
