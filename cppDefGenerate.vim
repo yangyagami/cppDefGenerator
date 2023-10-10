@@ -27,6 +27,19 @@ def GenerateCppDefForEach(lineno: number)
 		col += 1
 	endwhile
 
+	if retTypeName == "virtual"
+		retTypeName = ""
+		col = ParseWhitespace(line, col)
+		while true
+			if line[col] != " " && line[col] != "\t" && line[col] != "\n" && line[col] != "\r" && line[col] != "("
+				retTypeName = retTypeName .. line[col]
+			else
+				break
+			endif
+			col += 1
+		endwhile
+	endif
+
 	if line[col] == "("
 		functionName = retTypeName
 		retTypeName = ""
